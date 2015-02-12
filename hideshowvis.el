@@ -1,9 +1,9 @@
 ;;; hideshowvis.el --- Add markers to the fringe for regions foldable by hideshow.el
 ;;
 ;; Copyright 2008 Jan Rehders
-;; 
+;;
 ;; Author: Jan Rehders <cmdkeen@gmx.de>
-;; Version: 0.1
+;; Version: 0.2
 ;; Contributions by Bryan Waite
 ;;
 ;; This file is free software; you can redistribute it and/or modify
@@ -48,8 +48,16 @@
 ;; displaying a + symbol in the fringe for folded regions. It is not enabled by
 ;; default because it might interfere with custom hs-set-up-overlay functions
 ;;
+;;; Changelog
+;;
+;; v0.2, 2009-08-09
+;; - '-' symbol in fringe is clickable
+;; - don't show '-' in fringe if the foldable region ends on the same line
+;;
 
 (define-fringe-bitmap 'hideshowvis-hideable-marker [0 0 0 126 126 0 0 0])
+
+(defconst hideshowvis-version "v0.2" "Version of hideshowvis minor mode")
 
 (defface hideshowvis-hidable-face
   '((t (:foreground "#ccc" :box t)))
@@ -73,7 +81,6 @@
         (while (search-forward-regexp hs-block-start-regexp nil t)
           (let* ((ovl (make-overlay (match-beginning 0) (match-end 0)))
                  (marker-string "*hideshowvis*")
-                 (mdata (hs-match-data t))
                  (doit
                   (if hideshowvis-ignore-same-line
                       (let (begin-line)
@@ -132,8 +139,8 @@
             (hs-minor-mode 1)
             (hideshowvis-highlight-hs-regions-in-fringe (point-min) (point-max) 0)
             (add-to-list 'after-change-functions
-                         'hideshowvis-highlight-hs-regions-in-fringe))
-        (use-local-map hideshowvis-mode-map)
+                         'hideshowvis-highlight-hs-regions-in-fringe)
+            (use-local-map hideshowvis-mode-map))
         (remove-overlays (point-min) (point-max) 'hideshowvis-hs t)
         (setq after-change-functions
               (remove 'hideshowvis-highlight-hs-regions-in-fringe
