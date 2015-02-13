@@ -3,7 +3,7 @@
 ;; Copyright 2008-2012 Jan Rehders
 ;;
 ;; Author: Jan Rehders <cmdkeen@gmx.de>
-;; Version: 0.5
+;; Version: 0.6
 ;; Contributions and bug fixes by Bryan Waite, Michael Heerdegen, John Yates and
 ;; Matthew Fidler.
 ;;
@@ -61,22 +61,33 @@
 ;; It is not enabled by default because it might interfere with custom
 ;; hs-set-up-overlay functions
 ;;
+;;; TODO
+;;
+;; - global-hideshowvis-minor-mode
+;; - defcustom for hideshowvis-max-file-size needs to offer setting to nil
+;; - add fringe icons lazily, only for visible region (check lazy font-lock to
+;;   see if it can help with this)
+;;
 ;;; Changelog
+;;
+;; v0.6, 2013-03-28
+;; - Running hideshowvis-enable will not enable minor mode if buffer is larger
+;;   than `hideshowvis-max-file-size' to avoid slow loading of large files.
 ;;
 ;; v0.5, 2012-09-11
 ;; - Made ELPA compliant and added function `hideshowvis-symbols'
 ;;
 ;; v0.4, 2012-03-13
-;; - fixed bug causing transpose-words to be broken as well as causing problems
+;; - Fixed bug causing transpose-words to be broken as well as causing problems
 ;;   when auto-fill-mode was enabled
 ;;
 ;; v0.3, 2010-08-26
-;; - added autoload cookies
-;; - fixed bug causing major mode menu to disappear, among other things
+;; - Added autoload cookies.
+;; - Fixed bug causing major mode menu to disappear, among other things.
 ;;
 ;; v0.2, 2009-08-09
-;; - '-' symbol in fringe is clickable
-;; - don't show '-' in fringe if the foldable region ends on the same line
+;; - The '-' symbol in fringe is clickable.
+;; - Don't show '-' in fringe if the foldable region ends on the same line.
 ;;
 
 (define-fringe-bitmap 'hideshowvis-hideable-marker [0 0 0 126 126 0 0 0])
@@ -93,6 +104,13 @@
   closing parenthesis is on the same line. Set this to nil if
   enabling the minor mode is slow on your machine"
   :group 'hideshow)
+
+(defcustom hideshowvis-max-file-size (* 1024 100)
+  "hideshowvis-enable will not enable hideshowvis-mode if file is larger than
+this value (in bytes). The minor mode can still be forced to be enabled using
+`(hideshowvis-mode 1)'. Set this variable to nil to disable restriction."
+  :group 'hideshow
+  :type 'integer)
 
 (defun hideshowvis-highlight-hs-regions-in-fringe (&optional start end old-text-length)
   (when hs-minor-mode
@@ -178,7 +196,9 @@
 (defun hideshowvis-enable ()
   "Will enable hideshowvis minor mode"
   (interactive)
-  (hideshowvis-minor-mode 1))
+  (when (or (null hideshowvis-max-file-size)
+            (<= (point-max) hideshowvis-max-file-size))
+    (hideshowvis-minor-mode 1)))
 
 ;;;###autoload
 (defun hideshowvis-symbols ()
