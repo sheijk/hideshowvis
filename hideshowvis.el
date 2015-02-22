@@ -1,9 +1,11 @@
 ;;; hideshowvis.el --- Add markers to the fringe for regions foldable by hideshow.el
 ;;
-;; Copyright 2008-2012 Jan Rehders
+;; Copyright 2008-2015 Jan Rehders
 ;;
 ;; Author: Jan Rehders <cmdkeen@gmx.de>
+;; URL: https://github.com/sheijk/hideshowvis
 ;; Version: 0.6
+;;
 ;; Contributions and bug fixes by Bryan Waite, Michael Heerdegen, John Yates and
 ;; Matthew Fidler.
 ;;
@@ -113,6 +115,9 @@ this value (in bytes). The minor mode can still be forced to be enabled using
   :type 'integer)
 
 (defun hideshowvis-highlight-hs-regions-in-fringe (&optional start end old-text-length)
+  "Will update the fringe indicators for all foldable regions in the buffer.
+This can be slow for large buffers. Adjust `hideshowvis-max-file-size' when this
+happens for you."
   (when hs-minor-mode
     (save-excursion
       (save-restriction
