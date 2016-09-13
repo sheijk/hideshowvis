@@ -94,7 +94,7 @@
 
 (define-fringe-bitmap 'hideshowvis-hideable-marker [0 0 0 126 126 0 0 0])
 
-(defconst hideshowvis-version "v0.5" "Version of hideshowvis minor mode")
+(defconst hideshowvis-version "v0.6" "Version of hideshowvis minor mode")
 
 (defface hideshowvis-hidable-face
   '((t (:foreground "#ccc" :box t)))
