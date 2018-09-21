@@ -1,10 +1,11 @@
-;;; hideshowvis.el --- Add markers to the fringe for regions foldable by hideshow.el
+;;; hideshowvis.el --- Fringe markers for regions foldable by hideshow.el -*- lexical-binding: t; -*-
 ;;
 ;; Copyright 2008-2015 Jan Rehders
 ;;
 ;; Author: Jan Rehders <cmdkeen@gmx.de>
 ;; URL: https://github.com/sheijk/hideshowvis
-;; Version: 0.6
+;; Version: 0.7
+;; Package-Requires: ((emacs "24"))
 ;;
 ;; Contributions and bug fixes by Bryan Waite, Michael Heerdegen, John Yates and
 ;; Matthew Fidler.
@@ -28,10 +29,10 @@
 ;;; Commentary:
 ;;
 ;; This minor mode will add little +/- displays to foldable regions in the
-;; buffer and to folded regions. It is indented to be used in conjunction with
+;; buffer and to folded regions.  It is indented to be used in conjunction with
 ;; hideshow.el which is a part of GNU Emacs since version 20.
 ;;
-;; Currently it works for me but is not tested heavily. Please report any bugs
+;; Currently it works for me but is not tested heavily.  Please report any bugs
 ;; to the above email address
 ;;
 ;;; Installation:
@@ -50,7 +51,7 @@
 ;;   (add-hook hook 'hideshowvis-enable))
 ;;
 ;; If enabling hideshowvis-minor-mode is slow on your machine use M-x,
-;; customize-option, hideshowvis-ignore-same-line and set it to nil. This will
+;; customize-option, hideshowvis-ignore-same-line and set it to nil.  This will
 ;; then display - icons for foldable regions of one line, too but is faster
 ;;
 ;; To enable displaying a + symbol in the fringe for folded regions,
@@ -72,6 +73,9 @@
 ;;
 ;;; Changelog
 ;;
+;; v0.7, 2018-09-21
+;; - Fixed issues found using flycheck-package, package-lint, checkdoc
+;;
 ;; v0.6, 2013-03-28
 ;; - Running hideshowvis-enable will not enable minor mode if buffer is larger
 ;;   than `hideshowvis-max-file-size' to avoid slow loading of large files.
@@ -91,10 +95,13 @@
 ;; - The '-' symbol in fringe is clickable.
 ;; - Don't show '-' in fringe if the foldable region ends on the same line.
 ;;
+;;; Code:
+
+(require 'hideshow)
 
 (define-fringe-bitmap 'hideshowvis-hideable-marker [0 0 0 126 126 0 0 0])
 
-(defconst hideshowvis-version "v0.6" "Version of hideshowvis minor mode")
+(defconst hideshowvis-version "v0.7" "Version of hideshowvis minor mode.")
 
 (defface hideshowvis-hidable-face
   '((t (:foreground "#ccc" :box t)))
@@ -102,22 +109,29 @@
   :group 'hideshow)
 
 (defcustom hideshowvis-ignore-same-line t
-  "Do not display foldable regions in the fringe if the matching
-  closing parenthesis is on the same line. Set this to nil if
-  enabling the minor mode is slow on your machine"
-  :group 'hideshow)
+  "No + for single line regions.
+Do not display foldable regions in the fringe if the matching closing
+parenthesis is on the same line.  Set this to nil if enabling the minor mode is
+slow on your machine"
+  :group 'hideshow
+  :type 'bool)
 
 (defcustom hideshowvis-max-file-size (* 1024 100)
-  "hideshowvis-enable will not enable hideshowvis-mode if file is larger than
-this value (in bytes). The minor mode can still be forced to be enabled using
-`(hideshowvis-mode 1)'. Set this variable to nil to disable restriction."
+  "No highlighting in files larger than this number of bytes.
+
+‘hideshowvis-enable’ will not enable hideshowvis-mode if file is larger than
+this value (in bytes).  The minor mode can still be forced to be enabled using
+`(hideshowvis-mode 1)'.  Set this variable to nil to disable restriction."
   :group 'hideshow
   :type 'integer)
 
-(defun hideshowvis-highlight-hs-regions-in-fringe (&optional start end old-text-length)
+(defun hideshowvis-highlight-hs-regions-in-fringe (&optional start end _old-text-length)
   "Will update the fringe indicators for all foldable regions in the buffer.
-This can be slow for large buffers. Adjust `hideshowvis-max-file-size' when this
-happens for you."
+This can be slow for large buffers.  Adjust `hideshowvis-max-file-size' when
+this happens for you.
+
+`START', `END', and `OLD-TEXT-LENGTH' are the same as other
+functions used with `after-change-functions'."
   (when hs-minor-mode
     (save-excursion
       (save-restriction
@@ -155,6 +169,9 @@ happens for you."
 
 ;;;###autoload
 (defun hideshowvis-click-fringe (event)
+  "Handler function for mouse click.
+
+`EVENT' mouse event"
   (interactive "e")
   (mouse-set-point event)
   (end-of-line)
@@ -173,7 +190,7 @@ happens for you."
     (define-key hideshowvis-mode-map [left-fringe mouse-1]
       'hideshowvis-click-fringe)
     hideshowvis-mode-map)
-  "Keymap for hideshowvis mode")
+  "Keymap for hideshowvis mode.")
 
 ;;;###autoload
 (define-minor-mode hideshowvis-minor-mode ()
@@ -199,7 +216,7 @@ happens for you."
 
 ;;;###autoload
 (defun hideshowvis-enable ()
-  "Will enable hideshowvis minor mode"
+  "Will enable hideshowvis minor mode."
   (interactive)
   (when (or (null hideshowvis-max-file-size)
             (<= (point-max) hideshowvis-max-file-size))
@@ -207,47 +224,52 @@ happens for you."
 
 ;;;###autoload
 (defun hideshowvis-symbols ()
-  "Defines the things necessary to get a + symbol in the fringe
-and a yellow marker indicating the number of hidden lines at
-the end of the line for hidden regions."
+  "Enhance function `hs-minor-mode' with better highlighting for hidden regions.
+
+Defines the things necessary to get a + symbol in the fringe and a yellow marker
+indicating the number of hidden lines at the end of the line for hidden regions.
+
+This will change the value of `hs-set-up-overlay' so it will
+overwrite anything you've set there."
   (interactive)
   
-  (define-fringe-bitmap 'hs-marker [0 24 24 126 126 24 24 0])
+  (define-fringe-bitmap 'hideshowvis-hidden-marker [0 24 24 126 126 24 24 0])
   
-  (defcustom hs-fringe-face 'hs-fringe-face
+  (defcustom hideshowvis-hidden-fringe-face 'hideshowvis-hidden-fringe-face
     "*Specify face used to highlight the fringe on hidden regions."
     :type 'face
     :group 'hideshow)
   
-  (defface hs-fringe-face
+  (defface hideshowvis-hidden-fringe-face
     '((t (:foreground "#888" :box (:line-width 2 :color "grey75" :style released-button))))
     "Face used to highlight the fringe on folded regions"
     :group 'hideshow)
   
-  (defcustom hs-face 'hs-face
+  (defcustom hideshowvis-hidden-region-face 'hideshowvis-hidden-region-face
     "*Specify the face to to use for the hidden region indicator"
     :type 'face
     :group 'hideshow)
   
-  (defface hs-face
+  (defface hideshowvis-hidden-region-face
     '((t (:background "#ff8" :box t)))
     "Face to hightlight the ... area of hidden regions"
     :group 'hideshow)
-  
-  (defun display-code-line-counts (ov)
+
+  (defun hideshowvis-display-code-line-counts (ov)
     (when (eq 'code (overlay-get ov 'hs))
       (let* ((marker-string "*fringe-dummy*")
              (marker-length (length marker-string))
              (display-string (format "(%d)..." (count-lines (overlay-start ov) (overlay-end ov))))
              )
         (overlay-put ov 'help-echo "Hiddent text. C-c,= to show")
-        (put-text-property 0 marker-length 'display (list 'left-fringe 'hs-marker 'hs-fringe-face) marker-string)
+        (put-text-property 0 marker-length 'display
+                           (list 'left-fringe 'hideshowvis-hidden-marker 'hideshowvis-hidden-fringe-face)
+                           marker-string)
         (overlay-put ov 'before-string marker-string)
-        (put-text-property 0 (length display-string) 'face 'hs-face display-string)
-        (overlay-put ov 'display display-string)
-        )))
+        (put-text-property 0 (length display-string) 'face 'hideshowvis-hidden-region-face display-string)
+        (overlay-put ov 'display display-string))))
   
-  (setq hs-set-up-overlay 'display-code-line-counts))
+  (setq hs-set-up-overlay 'hideshowvis-display-code-line-counts))
 
 (provide 'hideshowvis)
 
