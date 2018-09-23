@@ -1,8 +1,8 @@
 ;;; hideshowvis.el --- Fringe markers for regions foldable by hideshow.el -*- lexical-binding: t; -*-
 ;;
-;; Copyright 2008-2015 Jan Rehders
+;; Copyright 2008-2018 Jan Rehders
 ;;
-;; Author: Jan Rehders <cmdkeen@gmx.de>
+;; Author: Jan Rehders <jan@sheijk.net>
 ;; URL: https://github.com/sheijk/hideshowvis
 ;; Version: 0.7
 ;; Package-Requires: ((emacs "24"))
