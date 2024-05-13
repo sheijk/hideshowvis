@@ -232,24 +232,24 @@ indicating the number of hidden lines at the end of the line for hidden regions.
 This will change the value of `hs-set-up-overlay' so it will
 overwrite anything you've set there."
   (interactive)
-  
+
   (define-fringe-bitmap 'hideshowvis-hidden-marker [0 24 24 126 126 24 24 0])
-  
+
   (defcustom hideshowvis-hidden-fringe-face 'hideshowvis-hidden-fringe-face
     "*Specify face used to highlight the fringe on hidden regions."
     :type 'face
     :group 'hideshow)
-  
+
   (defface hideshowvis-hidden-fringe-face
     '((t (:foreground "#888" :box (:line-width 2 :color "grey75" :style released-button))))
     "Face used to highlight the fringe on folded regions"
     :group 'hideshow)
-  
+
   (defcustom hideshowvis-hidden-region-face 'hideshowvis-hidden-region-face
     "*Specify the face to to use for the hidden region indicator"
     :type 'face
     :group 'hideshow)
-  
+
   (defface hideshowvis-hidden-region-face
     '((t (:background "#ff8" :box t)))
     "Face to hightlight the ... area of hidden regions"
