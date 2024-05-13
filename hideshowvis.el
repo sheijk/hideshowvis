@@ -220,6 +220,41 @@ functions used with `after-change-functions'."
             (<= (point-max) hideshowvis-max-file-size))
     (hideshowvis-minor-mode 1)))
 
+(define-fringe-bitmap 'hideshowvis-hidden-marker [0 24 24 126 126 24 24 0])
+
+(defcustom hideshowvis-hidden-fringe-face 'hideshowvis-hidden-fringe-face
+  "*Specify face used to highlight the fringe on hidden regions."
+  :type 'face
+  :group 'hideshow)
+
+(defface hideshowvis-hidden-fringe-face
+  '((t (:foreground "#888" :box (:line-width 2 :color "grey75" :style released-button))))
+  "Face used to highlight the fringe on folded regions"
+  :group 'hideshow)
+
+(defcustom hideshowvis-hidden-region-face 'hideshowvis-hidden-region-face
+  "*Specify the face to to use for the hidden region indicator"
+  :type 'face
+  :group 'hideshow)
+
+(defface hideshowvis-hidden-region-face
+  '((t (:background "#ff8" :box t)))
+  "Face to hightlight the ... area of hidden regions"
+  :group 'hideshow)
+
+(defun hideshowvis-display-code-line-counts (ov)
+  (when (eq 'code (overlay-get ov 'hs))
+    (let* ((marker-string "*fringe-dummy*")
+           (marker-length (length marker-string))
+           (display-string (format "%d lines" (count-lines (overlay-start ov) (overlay-end ov)))))
+      (overlay-put ov 'help-echo "Hidden text. C-c,= to show")
+      (put-text-property 0 marker-length 'display
+                         (list 'left-fringe 'hideshowvis-hidden-marker 'hideshowvis-hidden-fringe-face)
+                         marker-string)
+      (overlay-put ov 'before-string marker-string)
+      (put-text-property 0 (length display-string) 'face 'hideshowvis-hidden-region-face display-string)
+      (overlay-put ov 'after-string display-string))))
+
 ;;;###autoload
 (defun hideshowvis-symbols ()
   "Enhance function `hs-minor-mode' with better highlighting for hidden regions.
@@ -230,42 +265,6 @@ indicating the number of hidden lines at the end of the line for hidden regions.
 This will change the value of `hs-set-up-overlay' so it will
 overwrite anything you've set there."
   (interactive)
-
-  (define-fringe-bitmap 'hideshowvis-hidden-marker [0 24 24 126 126 24 24 0])
-
-  (defcustom hideshowvis-hidden-fringe-face 'hideshowvis-hidden-fringe-face
-    "*Specify face used to highlight the fringe on hidden regions."
-    :type 'face
-    :group 'hideshow)
-
-  (defface hideshowvis-hidden-fringe-face
-    '((t (:foreground "#888" :box (:line-width 2 :color "grey75" :style released-button))))
-    "Face used to highlight the fringe on folded regions"
-    :group 'hideshow)
-
-  (defcustom hideshowvis-hidden-region-face 'hideshowvis-hidden-region-face
-    "*Specify the face to to use for the hidden region indicator"
-    :type 'face
-    :group 'hideshow)
-
-  (defface hideshowvis-hidden-region-face
-    '((t (:background "#ff8" :box t)))
-    "Face to hightlight the ... area of hidden regions"
-    :group 'hideshow)
-
-  (defun hideshowvis-display-code-line-counts (ov)
-    (when (eq 'code (overlay-get ov 'hs))
-      (let* ((marker-string "*fringe-dummy*")
-             (marker-length (length marker-string))
-             (display-string (format "%d lines" (count-lines (overlay-start ov) (overlay-end ov)))))
-        (overlay-put ov 'help-echo "Hiddent text. C-c,= to show")
-        (put-text-property 0 marker-length 'display
-                           (list 'left-fringe 'hideshowvis-hidden-marker 'hideshowvis-hidden-fringe-face)
-                           marker-string)
-        (overlay-put ov 'before-string marker-string)
-        (put-text-property 0 (length display-string) 'face 'hideshowvis-hidden-region-face display-string)
-        (overlay-put ov 'after-string display-string))))
-
   (setq hs-set-up-overlay 'hideshowvis-display-code-line-counts))
 
 (provide 'hideshowvis)
