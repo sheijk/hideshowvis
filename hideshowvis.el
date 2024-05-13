@@ -259,16 +259,15 @@ overwrite anything you've set there."
     (when (eq 'code (overlay-get ov 'hs))
       (let* ((marker-string "*fringe-dummy*")
              (marker-length (length marker-string))
-             (display-string (format "(%d)..." (count-lines (overlay-start ov) (overlay-end ov))))
-             )
+             (display-string (format "%d lines" (count-lines (overlay-start ov) (overlay-end ov)))))
         (overlay-put ov 'help-echo "Hiddent text. C-c,= to show")
         (put-text-property 0 marker-length 'display
                            (list 'left-fringe 'hideshowvis-hidden-marker 'hideshowvis-hidden-fringe-face)
                            marker-string)
         (overlay-put ov 'before-string marker-string)
         (put-text-property 0 (length display-string) 'face 'hideshowvis-hidden-region-face display-string)
-        (overlay-put ov 'display display-string))))
-  
+        (overlay-put ov 'after-string display-string))))
+
   (setq hs-set-up-overlay 'hideshowvis-display-code-line-counts))
 
 (provide 'hideshowvis)
