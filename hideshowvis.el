@@ -265,7 +265,34 @@ indicating the number of hidden lines at the end of the line for hidden regions.
 This will change the value of `hs-set-up-overlay' so it will
 overwrite anything you've set there."
   (interactive)
-  (setq hs-set-up-overlay 'hideshowvis-display-code-line-counts))
+  (setq hs-set-up-overlay 'hideshowvis-display-code-line-counts)
+  ;; These won't get removed, again. Revert hooks are global and making them
+  ;; buffer local might be risky. Instead checking whether showing symbols is
+  ;; turned on in the hook functions
+  (add-hook 'before-revert-hook 'hideshowvis-remove-overlays)
+  (add-hook 'after-revert-hook 'hideshowvis-update-all-overlays)
+  (hideshowvis-update-all-overlays))
+
+;;;###autoload
+(defun hideshowvis-symbols-off ()
+  "Disable enhanced highlighting of hidden regions."
+  (interactive)
+  (hideshowvis-remove-overlays)
+  (setq hs-set-up-overlay 'ignore))
+
+(defun hideshowvis-remove-overlays ()
+  (when (equal hs-set-up-overlay 'hideshowvis-display-code-line-counts)
+    (dolist (ov (overlays-in (point-min) (point-max)))
+      (unless (null (overlay-get ov 'hs))
+        (overlay-put ov 'after-string nil)))))
+
+(defun hideshowvis-update-all-overlays ()
+  (when (equal hs-set-up-overlay 'hideshowvis-display-code-line-counts)
+    (dolist (ov (overlays-in (point-min) (point-max)))
+      (unless (null (overlay-get ov 'hs))
+        (if (equal (overlay-start ov) (overlay-end ov))
+            (delete-overlay ov)
+          (hideshowvis-display-code-line-counts ov))))))
 
 (provide 'hideshowvis)
 
