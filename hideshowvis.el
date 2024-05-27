@@ -140,23 +140,21 @@ functions used with `after-change-functions'."
         (goto-char (point-min))
         (remove-overlays (point-min) (point-max) 'hideshowvis-hs t)
         (while (search-forward-regexp hs-block-start-regexp nil t)
-          (let* ((ovl (make-overlay (match-beginning 0) (match-end 0)))
-                 (marker-string "*hideshowvis*")
-                 (doit
-                  (if hideshowvis-ignore-same-line
-                      (let (begin-line)
-                        (setq begin-line
-                              (save-excursion
-                                (goto-char (match-beginning 0))
-                                (line-number-at-pos (point))))
-                        (save-excursion
-                          (goto-char (match-beginning 0))
-                          (ignore-errors
-                            (progn
-                              (funcall hs-forward-sexp-func 1)
-                              (> (line-number-at-pos (point)) begin-line)))))
-                    t)))
-            (when doit
+          (when (if hideshowvis-ignore-same-line
+                    (let (begin-line)
+                      (setq begin-line
+                            (save-excursion
+                              (goto-char (match-beginning 0))
+                              (line-number-at-pos (point))))
+                      (save-excursion
+                        (goto-char (match-beginning 0))
+                        (ignore-errors
+                          (progn
+                            (funcall hs-forward-sexp-func 1)
+                            (> (line-number-at-pos (point)) begin-line)))))
+                  t)
+            (let* ((ovl (make-overlay (match-beginning 0) (match-end 0)))
+                   (marker-string "*hideshowvis*"))
               (put-text-property 0
                                  (length marker-string)
                                  'display
