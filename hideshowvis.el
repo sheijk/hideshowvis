@@ -4,7 +4,7 @@
 ;;
 ;; Author: Jan Rehders <jan@sheijk.net>
 ;; URL: https://github.com/sheijk/hideshowvis
-;; Version: 0.7
+;; Version: 0.8
 ;; Package-Requires: ((emacs "24"))
 ;;
 ;; Contributions and bug fixes by Bryan Waite, Michael Heerdegen, John Yates,
@@ -73,6 +73,11 @@
 ;;
 ;;; Changelog
 ;;
+;; v0.8, 2024-05-28
+;; - Fixed interaction with auto-revert-mode and indent-region
+;; - Fixed performance issue in some cases due to leaking overlays
+;; - Factoring out hideshowvis-symbols a bit more
+;;
 ;; v0.7, 2018-09-21
 ;; - Fixed issues found using flycheck-package, package-lint, checkdoc
 ;;
@@ -105,7 +110,7 @@
 
 (defface hideshowvis-hidable-face
   '((t (:foreground "#ccc" :box t)))
-  "Face to highlight foldable regions"
+  "Face to highlight foldable regions."
   :group 'hideshow)
 
 (defcustom hideshowvis-ignore-same-line t
@@ -192,7 +197,7 @@ functions used with `after-change-functions'."
 
 ;;;###autoload
 (define-minor-mode hideshowvis-minor-mode ()
-  "Will indicate regions foldable with hideshow in the fringe."
+  :doc "Will indicate regions foldable with hideshow in the fringe."
   :init-value nil
   :require 'hideshow
   :group 'hideshow
@@ -229,20 +234,21 @@ functions used with `after-change-functions'."
 
 (defface hideshowvis-hidden-fringe-face
   '((t (:foreground "#888" :box (:line-width 2 :color "grey75" :style released-button))))
-  "Face used to highlight the fringe on folded regions"
+  "Face used to highlight the fringe on folded regions."
   :group 'hideshow)
 
 (defcustom hideshowvis-hidden-region-face 'hideshowvis-hidden-region-face
-  "*Specify the face to to use for the hidden region indicator"
+  "*Specify the face to to use for the hidden region indicator."
   :type 'face
   :group 'hideshow)
 
 (defface hideshowvis-hidden-region-face
   '((t (:background "#ff8" :box t)))
-  "Face to hightlight the ... area of hidden regions"
+  "Face to hightlight the ... area of hidden regions."
   :group 'hideshow)
 
 (defun hideshowvis-display-code-line-counts (ov)
+  "Extend overlay OV to show number of lines hidden for `hideshowvis-symbols'."
   (when (eq 'code (overlay-get ov 'hs))
     (let* ((marker-string "*fringe-dummy*")
            (marker-length (length marker-string))
@@ -281,12 +287,14 @@ overwrite anything you've set there."
   (setq hs-set-up-overlay 'ignore))
 
 (defun hideshowvis-remove-overlays ()
+  "Will remove all overlays added after calling `hideshowvis-symbols'."
   (when (equal hs-set-up-overlay 'hideshowvis-display-code-line-counts)
     (dolist (ov (overlays-in (point-min) (point-max)))
       (unless (null (overlay-get ov 'hs))
         (overlay-put ov 'after-string nil)))))
 
 (defun hideshowvis-update-all-overlays ()
+  "Will update all overlays added after calling `hideshowvis-symbols'."
   (when (equal hs-set-up-overlay 'hideshowvis-display-code-line-counts)
     (dolist (ov (overlays-in (point-min) (point-max)))
       (unless (null (overlay-get ov 'hs))
