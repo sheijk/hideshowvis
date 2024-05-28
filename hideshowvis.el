@@ -7,8 +7,8 @@
 ;; Version: 0.7
 ;; Package-Requires: ((emacs "24"))
 ;;
-;; Contributions and bug fixes by Bryan Waite, Michael Heerdegen, John Yates and
-;; Matthew Fidler.
+;; Contributions and bug fixes by Bryan Waite, Michael Heerdegen, John Yates,
+;; Matthew Fidler, and Eyal Soha.
 ;;
 ;; This file is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
