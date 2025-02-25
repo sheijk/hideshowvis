@@ -69,6 +69,8 @@
 
 ;;; Changelog
 
+;; - hideshowvis-minor-mode can now be turned on during hs-minor-mode-hook
+;;
 ;; v0.8, 2024-05-28
 ;; - Fixed interaction with auto-revert-mode and indent-region
 ;; - Fixed performance issue in some cases due to leaking overlays
@@ -199,7 +201,8 @@ functions used with `after-change-functions'."
   (condition-case err
       (if hideshowvis-minor-mode
           (progn
-            (hs-minor-mode 1)
+            (unless hs-minor-mode
+              (hs-minor-mode 1))
             (hideshowvis-highlight-hs-regions-in-fringe (point-min) (point-max) 0)
             (add-hook 'after-change-functions
                       'hideshowvis-highlight-hs-regions-in-fringe))
