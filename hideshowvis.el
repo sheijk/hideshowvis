@@ -263,20 +263,24 @@ indicating the number of hidden lines at the end of the line for hidden regions.
 This will change the value of `hs-set-up-overlay' so it will
 overwrite anything you've set there."
   (interactive)
-  (setq hs-set-up-overlay #'hideshowvis-display-code-line-counts)
-  ;; These won't get removed, again. Revert hooks are global and making them
-  ;; buffer local might be risky. Instead checking whether showing symbols is
-  ;; turned on in the hook functions
-  (add-hook 'before-revert-hook #'hideshowvis-remove-overlays)
-  (add-hook 'after-revert-hook #'hideshowvis-update-all-overlays)
-  (hideshowvis-update-all-overlays))
+  (if (boundp 'hs-display-lines-hidden) ; Emacs 31
+      (setq hs-display-lines-hidden t)
+    (setq hs-set-up-overlay #'hideshowvis-display-code-line-counts)
+    ;; These won't get removed, again. Revert hooks are global and making them
+    ;; buffer local might be risky. Instead checking whether showing symbols is
+    ;; turned on in the hook functions
+    (add-hook 'before-revert-hook #'hideshowvis-remove-overlays)
+    (add-hook 'after-revert-hook #'hideshowvis-update-all-overlays)
+    (hideshowvis-update-all-overlays)))
 
 ;;;###autoload
 (defun hideshowvis-symbols-off ()
   "Disable enhanced highlighting of hidden regions."
   (interactive)
-  (hideshowvis-remove-overlays)
-  (setq hs-set-up-overlay 'ignore))
+  (if (boundp 'hs-display-lines-hidden)
+      (setq hs-display-lines-hidden nil)
+    (hideshowvis-remove-overlays)
+    (setq hs-set-up-overlay 'ignore)))
 
 (defun hideshowvis-remove-overlays ()
   "Will remove all overlays added after calling `hideshowvis-symbols'."
