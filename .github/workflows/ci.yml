@@ -1,0 +1,44 @@
+
+name: emacs-package-tests
+on: [push, pull_request]
+jobs:
+  build-and-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          # - windows-latest
+        emacs:
+          - 30.2
+          - 29.3
+          - 28.1
+          - 27.2
+          - 26.3
+        exclude:
+          # Older Emacs versions are not supported by emacs-setup CI github
+          # action, anymore.
+          # See https://github.com/purcell/setup-emacs/issues/48
+          - os: macos-latest
+            emacs: 27.2
+          - os: macos-latest
+            emacs: 26.3
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2
+
+      - name: Install Emacs
+        uses: purcell/setup-emacs@master
+        with:
+          version: ${{matrix.emacs}}
+
+      - name: Run checks
+        uses: leotaku/elisp-check@master
+        with:
+          file: hideshowvis.el
+          ignore_warnings: false
+
