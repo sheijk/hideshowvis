@@ -158,7 +158,7 @@ functions used with `after-change-functions'."
             (let* ((ovl (make-overlay (match-beginning 0) (match-end 0))))
               (overlay-put ovl 'before-string
                            (propertize
-                            "*hideshowvis*"
+                            " "
                             'display
                             (list 'left-fringe
                                   'hideshowvis-hideable-marker
