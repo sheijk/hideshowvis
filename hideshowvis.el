@@ -63,13 +63,14 @@
 ;;; TODO
 
 ;; - global-hideshowvis-minor-mode
-;; - defcustom for hideshowvis-max-file-size needs to offer setting to nil
 ;; - add fringe icons lazily, only for visible region (check lazy font-lock to
 ;;   see if it can help with this)
 
 ;;; Changelog
 
 ;; - hideshowvis-minor-mode can now be turned on during hs-minor-mode-hook
+;; - hideshowvis-symbols uses hs-display-lines-hidden in Emacs 31
+;; - fix compatibility with htmlize and modes using it
 ;;
 ;; v0.8, 2024-05-28
 ;; - Fixed interaction with auto-revert-mode and indent-region
@@ -127,7 +128,8 @@ slow on your machine"
 ‘hideshowvis-enable’ will not enable hideshowvis-mode if file is larger than
 this value (in bytes).  The minor mode can still be forced to be enabled using
 `(hideshowvis-mode 1)'.  Set this variable to nil to disable restriction."
-  :type 'natnum)
+  :type '(choice (natnum :tag "Size in bytes")
+                 (const :tag "No limit" nil)))
 
 (defun hideshowvis-highlight-hs-regions-in-fringe (&optional start end _old-text-length)
   "Will update the fringe indicators for all foldable regions in the buffer.
