@@ -4,7 +4,7 @@
 
 ;; Author: Jan Rehders <jan@sheijk.net>
 ;; URL: https://github.com/sheijk/hideshowvis
-;; Version: 0.8
+;; Version: 0.9
 ;; Package-Requires: ((emacs "27.1"))
 
 ;; Contributions and bug fixes by Bryan Waite, Michael Heerdegen, John Yates,
@@ -68,6 +68,7 @@
 
 ;;; Changelog
 
+;; v0.9, 2025-11-19
 ;; - hideshowvis-minor-mode can now be turned on during hs-minor-mode-hook
 ;; - hideshowvis-symbols uses hs-display-lines-hidden in Emacs 31
 ;; - fix compatibility with htmlize and modes using it
@@ -109,7 +110,7 @@
 
 (define-fringe-bitmap 'hideshowvis-hideable-marker [0 0 0 126 126 0 0 0])
 
-(defconst hideshowvis-version "v0.8" "Version of hideshowvis minor mode.")
+(defconst hideshowvis-version "v0.9" "Version of hideshowvis minor mode.")
 
 (defface hideshowvis-hidable-face
   '((t (:foreground "#ccc" :box t)))
