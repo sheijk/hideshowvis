@@ -132,6 +132,22 @@ this value (in bytes).  The minor mode can still be forced to be enabled using
   :type '(choice (natnum :tag "Size in bytes")
                  (const :tag "No limit" nil)))
 
+(defun hideshowvis--find-next-block (regexp bound comments)
+  "Compatibility function to reposition point at next block-start.
+Skip comments if COMMENTS is nil, and search for REGEXP in region (point
+BOUND)."
+  (cond
+   ;; added in Emacs 31.1.
+   ((and (boundp 'hs-find-next-block-function)
+         (functionp hs-find-next-block-function))
+    (funcall hs-find-next-block-function regexp bound comments))
+   ;; added in Emacs 29.1.
+   ((and (boundp 'hs-find-next-block-func)
+         (functionp hs-find-next-block-func))
+    (funcall hs-find-next-block-func regexp bound comments))
+   (t
+    (search-forward-regexp hs-block-start-regexp nil t))))
+
 (defun hideshowvis-highlight-hs-regions-in-fringe (&optional start end _old-text-length)
   "Will update the fringe indicators for all foldable regions in the buffer.
 This can be slow for large buffers.  Adjust `hideshowvis-max-file-size' when
@@ -146,7 +162,7 @@ functions used with `after-change-functions'."
           (narrow-to-region start end))
         (goto-char (point-min))
         (remove-overlays (point-min) (point-max) 'hideshowvis-hs t)
-        (while (search-forward-regexp hs-block-start-regexp nil t)
+        (while (hideshowvis--find-next-block hs-block-start-regexp (point-max) t)
           (when (if hideshowvis-ignore-same-line
                     (let ((begin-line (save-excursion
                                         (goto-char (match-beginning 0))
